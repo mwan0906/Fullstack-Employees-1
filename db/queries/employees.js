@@ -16,7 +16,12 @@ export async function createEmployee({ name, birthday, salary }) {
 
 /** @returns all employees */
 export async function getEmployees() {
-  // TODO
+  const sql = `
+  SELECT *
+  FROM employees
+  `;
+  const { rows: employees } = await db.query(sql);
+  return employees;
 }
 
 /**
@@ -24,7 +29,14 @@ export async function getEmployees() {
  * @returns undefined if employee with the given id does not exist
  */
 export async function getEmployee(id) {
-  // TODO
+  const text = `
+  SELECT *
+  FROM employees
+  WHERE id = $1
+  `;
+  const values = [id];
+  const { rows: employees } = await db.query({ text, values });
+  return employees[0];
 }
 
 /**
@@ -32,7 +44,15 @@ export async function getEmployee(id) {
  * @returns undefined if employee with the given id does not exist
  */
 export async function updateEmployee({ id, name, birthday, salary }) {
-  // TODO
+  const text = `
+  UPDATE employees
+  SET name = $2, birthday = $3, salary = $4
+  WHERE id = $1
+  RETURNING *
+  `;
+  const values = [id, name, birthday, salary];
+  const { rows: employees } = await db.query({ text, values });
+  return employees[0];
 }
 
 /**
@@ -40,5 +60,25 @@ export async function updateEmployee({ id, name, birthday, salary }) {
  * @returns undefined if employee with the given id does not exist
  */
 export async function deleteEmployee(id) {
-  // TODO
+  const text = `
+  DELETE
+  FROM employees
+  WHERE id = $1
+  RETURNING *
+  `;
+  const values = [id];
+  const res = await db.query({ text, values });
+  return res.rows[0];
+}
+
+/**
+ * @returns True if the given id is a positive integer, False otherwise
+ */
+export function isPosInt(id) {
+  for (let i = 0; i < id.length; i++) {
+    if (!Number.isInteger(+id[i])) {
+      return false;
+    }
+  }
+  return true;
 }
